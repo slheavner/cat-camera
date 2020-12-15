@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>Pi Video Surveillance</title>
+  <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
+  </head>
+  <body>
+    <h1>Pi Video Surveillance</h1>
+    <img width="640" height="360" src="{{ url_for('video_feed') }}">
+    <input id="min" type="color" name="min">
+    <span><input   id="maxr" type="range" min="0" max="255" /><label id="maxValue">0</label></span>
+    <span><input   id="maxg" type="range" min="0" max="255" /><label id="maxValue">0</label></span>
+    <span><input   id="maxb" type="range" min="0" max="255" /><label id="maxValue">0</label></span>
+    <div id="color" style="width:100;height:100"></div>
+    <button id="setButton">Submit</button>
+
+  </body>
+
+  <script>
+      $(document).ready(function() {
+            $("#maxr")[0].oninput = (function() {
+            console.log($("#maxr")[0].value)
+                $("#maxValue")[0].innerText = $("#maxr")[0].value.toString()
+            })
+          $("#setButton").on('click', function() {
+              console.log('clicked, making a request')
+
+              $.ajax({
+                  type: 'POST',
+                  url: '/set_range',
+                  data: JSON.stringify({min: hexToRgb($("#min")[0].value), max: hexToRgb($("#max")[0].value)}),
+                  contentType: 'application/json'              })
+          })
+      })
+      function hexToRgb(hex) {
+      console.log(hex)
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+  </script>
+</html>

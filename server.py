@@ -72,10 +72,10 @@ def generate():
 
         frame = vs.read()
         output = frame
-        # mask = cv2.inRange(frame, lower, upper)
+        mask = cv2.inRange(frame, lower, upper)
         # output = cv2.bitwise_and(frame, frame, mask=mask)
-        # output = cv2.putText(output, str(cv2.countNonZero(
-        #     mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0))
+        output = cv2.putText(output, str(cv2.countNonZero(
+            mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0))
         with lock:
             # check if the output frame is available, otherwise skip
             # the iteration of the loop

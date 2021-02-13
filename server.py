@@ -20,19 +20,13 @@ lock = threading.Lock()
 app = Flask(__name__)
 # initialize the video stream and allow the camera sensor to
 # warmup
-#vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0,resolution=(320, 240)).start()
+# vs = VideoStream(usePiCamera=1).start()
+# vs = VideoStream(src=0,resolution=(320, 240)).start()
 time.sleep(2.0)
 
-upper = np.array([100, 120, 200], dtype="uint8")
-lower = np.array([30, 70, 130], dtype="uint8")
-finn = {
-    'lower': {
-        'r': lower[2],
-        'g': lower[1],
-        'b': lower[0]
-    }
-}
+upper = np.array([95, 125, 140], dtype="uint8")
+lower = np.array([40, 80, 65], dtype="uint8")
+finn = np.append(upper, lower)
 
 
 @app.route("/")
@@ -41,11 +35,19 @@ def index():
     return render_template("index.html", finn=finn)
 
 
-@app.route("/video_feed")
-def video_feed():
+@app.route("/video_feed_nico")
+def video_feed_nico():
     # return the response generated along with the specific media
     # type (mime type)
-    return Response(generate(),
+    return Response(generate('nico.png'),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.route("/video_feed_finn")
+def video_feed_finn():
+    # return the response generated along with the specific media
+    # type (mime type)
+    return Response(generate('finn.png'),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
@@ -55,27 +57,25 @@ def set_range():
     # type (mime type)
     global upper, lower
     data = request.get_json(force=True)
-    min = data["min"]
-    max = data["max"]
     with lock:
-        upper = np.array([max["b"], max["g"], max["r"]], dtype="uint8")
-        lower = np.array([min["b"], min["g"], min["r"]], dtype="uint8")
+        upper = np.array([data[0], data[1], data[2]], dtype="uint8")
+        lower = np.array([data[3], data[4], data[5]], dtype="uint8")
     return Response()
 
 
-def generate():
+def generate(path):
     # grab global references to the output frame and lock variables
     global output, lock
     # loop over frames from the output stream
     while True:
         # wait until the lock is acquired
 
-        frame = vs.read()
+        frame = cv2.imread(path, 1)
         output = frame
         mask = cv2.inRange(frame, lower, upper)
-        # output = cv2.bitwise_and(frame, frame, mask=mask)
+        output = cv2.bitwise_and(frame, frame, mask=mask)
         output = cv2.putText(output, str(cv2.countNonZero(
-            mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0))
+            mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
         with lock:
             # check if the output frame is available, otherwise skip
             # the iteration of the loop

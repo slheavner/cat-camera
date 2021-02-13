@@ -4,37 +4,58 @@
     <title>Finn's Diet Cam</title>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
-    <link rel="stylesheet" type="text/css"
-        href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
 </head>
 
 <body>
-    <h1>Pi Video Surveillance</h1>
-    <img width="640" height="360" src="{{ url_for('video_feed') }}">
-    <input id="min" type="color" name="min">
-    <span><input id="maxr" class="max" type="range" min="0" max="255" /><label
-            id="maxValue">0</label>{{finn['lower']}}</span>
-    <span><input id="maxg" class="max" type="range" min="0" max="255" /><label id="maxValue">0</label></span>
-    <span><input id="maxb" type="range" min="0" max="255" /><label id="maxValue">0</label></span>
-    <div id="color" style="width:100;height:100"></div>
+    <h1>Diet Cam</h1>
+    <img width="640" height="360" src="{{ url_for('video_feed_finn') }}">
+    <img width="640" height="360" src="{{ url_for('video_feed_nico') }}">
+    <div>
+        <span><input id="ur" class="max" type="range" min="0" max="255" value="{{finn[2]}}" /><label
+                id="ur-label">{{finn[2]}}</label></span>
+        <span><input id="ug" class="max" type="range" min="0" max="255" value="{{finn[1]}}" /><label
+                id="ug-label">{{finn[1]}}</label></span>
+        <span><input id="ub" class="max" type="range" min="0" max="255" value="{{finn[0]}}" /><label
+                id="ub-label">{{finn[0]}}</label></span>
+    </div>
+
+    <div>
+        <span><input id="lr" class="min" type="range" min="0" max="255" value="{{finn[5]}}" /><label
+                id="lr-label">{{finn[5]}}</label></span>
+        <span><input id="lg" class="min" type="range" min="0" max="255" value="{{finn[4]}}" /><label
+                id="lg-label">{{finn[4]}}</label></span>
+        <span><input id="lb" class="min" type="range" min="0" max="255" value="{{finn[3]}}" /><label
+                id="lb-label">{{finn[3]}}</label></span>
+    </div>
+    <div>{{finn}}</div>
     <button id="setButton">Submit</button>
 
 </body>
 
 <script>
     $(document).ready(function () {
-        $("#maxr")[0].oninput = (function () {
-            console.log($("#maxr")[0].value)
-            $("#maxValue")[0].innerText = $("#maxr")[0].value.toString()
+        $(".min").on('input', function (e) {
+            $(`#${e.target.id}-label`)[0].innerText = e.target.value
         })
+        $(".max").on('input', function (e) {
+            $(`#${e.target.id}-label`)[0].innerText = e.target.value
+        })
+
         $("#setButton").on('click', function () {
             console.log('clicked, making a request')
+            let values = [
+                $('#ub')[0].value,
+                $('#ug')[0].value,
+                $('#ur')[0].value,
+                $('#lb')[0].value,
+                $('#lg')[0].value,
+                $('#lr')[0].value,
+            ]
 
             $.ajax({
                 type: 'POST',
                 url: '/set_range',
-                data: JSON.stringify({ min: hexToRgb($("#min")[0].value), max: hexToRgb($("#max")[0].value) }),
+                data: JSON.stringify(values),
                 contentType: 'application/json'
             })
         })

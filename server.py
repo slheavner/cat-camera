@@ -71,11 +71,11 @@ def generate():
         # wait until the lock is acquired
 
         frame = vs.read()
-        output = None
-        mask = cv2.inRange(frame, lower, upper)
-        output = cv2.bitwise_and(frame, frame, mask=mask)
-        output = cv2.putText(output, str(cv2.countNonZero(
-            mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0))
+        output = frame
+        # mask = cv2.inRange(frame, lower, upper)
+        # output = cv2.bitwise_and(frame, frame, mask=mask)
+        # output = cv2.putText(output, str(cv2.countNonZero(
+        #     mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0))
         with lock:
             # check if the output frame is available, otherwise skip
             # the iteration of the loop
@@ -99,8 +99,6 @@ if __name__ == '__main__':
                     help="ip address of the device")
     ap.add_argument("-o", "--port", type=int, required=True,
                     help="ephemeral port number of the server (1024 to 65535)")
-    ap.add_argument("-f", "--frame-count", type=int, default=32,
-                    help="# of frames used to construct the background model")
     args = vars(ap.parse_args())
     # start a thread that will perform motion detection
     # start the flask app

@@ -8,8 +8,17 @@
 
 <body>
     <h1>Diet Cam</h1>
-    <img width="640" height="360" src="{{ url_for('video_feed_finn') }}">
-    <img width="640" height="360" src="{{ url_for('video_feed_nico') }}">
+    <div>
+        <img width="640" height="360" src="{{ url_for('video_feed_finn') }}">
+        <img width="640" height="360" src="{{ url_for('video_feed_nico') }}">
+    </div>
+    <div>
+        <img width="640" height="360" src="{{ url_for('video_feed_finn2') }}">
+        <img width="640" height="360" src="{{ url_for('video_feed_nico2') }}">
+    </div>
+    <div>
+        <img width="640" height="360" src="{{ url_for('video_feed_none') }}">
+    </div>
     <div>
         <span><input id="ur" class="max" type="range" min="0" max="255" value="{{finn[2]}}" /><label
                 id="ur-label">{{finn[2]}}</label></span>

@@ -24,11 +24,16 @@ app = Flask(__name__)
 # vs = VideoStream(src=0,resolution=(320, 240)).start()
 time.sleep(2.0)
 
-upper = np.array([95, 125, 140], dtype="uint8")
-lower = np.array([40, 80, 65], dtype="uint8")
-finn = np.append(upper, lower)
+nico_values = {
+    'upper': np.array([90, 57, 62], dtype="uint8"),
+    'lower': np.array([0, 0, 0], dtype="uint8")
+}
+finn_values = {
+    'upper': np.array([95, 125, 140], dtype="uint8"),
+    'lower': np.array([32, 55, 65], dtype="uint8")
+}
 
-
+finn = 'asdf'
 @app.route("/")
 def index():
     # return the rendered template
@@ -37,17 +42,31 @@ def index():
 
 @app.route("/video_feed_nico")
 def video_feed_nico():
-    # return the response generated along with the specific media
-    # type (mime type)
     return Response(generate('nico.png'),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.route("/video_feed_nico2")
+def video_feed_nico2():
+    return Response(generate('nico2.png'),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
 @app.route("/video_feed_finn")
 def video_feed_finn():
-    # return the response generated along with the specific media
-    # type (mime type)
     return Response(generate('finn.png'),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.route("/video_feed_finn2")
+def video_feed_finn2():
+    return Response(generate('finn2.png'),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.route("/video_feed_none")
+def video_feed_none():
+    return Response(generate('none.png'),
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
@@ -63,6 +82,16 @@ def set_range():
     return Response()
 
 
+def is_cat(n, f):
+    percentage = n / f
+    if percentage >= 1.15 and n > 200000:
+        return 'nico'
+    elif percentage <= 0.85 and f > 200000:
+        return 'finn'
+    else:
+        return 'none'
+
+
 def generate(path):
     # grab global references to the output frame and lock variables
     global output, lock
@@ -72,10 +101,14 @@ def generate(path):
 
         frame = cv2.imread(path, 1)
         output = frame
-        mask = cv2.inRange(frame, lower, upper)
-        output = cv2.bitwise_and(frame, frame, mask=mask)
-        output = cv2.putText(output, str(cv2.countNonZero(
-            mask)), (50, 50), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
+        nico_mask = cv2.inRange(frame, nico_values['lower'], nico_values['upper'])
+        finn_mask = cv2.inRange(frame, finn_values['lower'], finn_values['upper'])
+        nico_count = cv2.countNonZero(nico_mask)
+        finn_count = cv2.countNonZero(finn_mask)
+        output = cv2.putText(output, "Nico: " + str(nico_count), (50, 50), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
+        output = cv2.putText(output, "Finn: " + str(finn_count), (50, 150), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
+        output = cv2.putText(output, "Percentage: " + str(nico_count / finn_count), (50, 250), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
+        output = cv2.putText(output, "Is Cat: " + is_cat(nico_count, finn_count), (50, 350), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
         with lock:
             # check if the output frame is available, otherwise skip
             # the iteration of the loop

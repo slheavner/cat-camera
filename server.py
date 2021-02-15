@@ -23,8 +23,8 @@ app = Flask(__name__)
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 vs = VideoStream(src=0, resolution=(320, 240)).start()
-vs.stream.set(3, 1280)
-vs.stream.set(4, 720)
+vs.stream.set(3, 650)
+vs.stream.set(4, 360)
 vs.stream.get(17)
 time.sleep(2.0)
 SERVO_MIN = 0.000544
@@ -34,7 +34,7 @@ servo_nico = Servo(18, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
 servo_finn = Servo(13, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
 
 
-current_state = 'none'
+current_state = ''
 
 
 nico_values = {
@@ -50,7 +50,7 @@ finn_values = {
 @app.route("/")
 def index():
     # return the rendered template
-    return render_template("index.html")
+    return render_template("index.html", finn="asdfasdfasdf")
 
 
 @app.route("/video_feed")
@@ -93,14 +93,14 @@ def write_text(frame, text, y):
 def update_servos():
     global current_state, servo_finn, servo_nico
     if current_state == 'nico':
-        servo_nico.max()
-        servo_finn.max()
-    elif current_state == 'finn':
         servo_nico.min()
         servo_finn.min()
-    else:
-        servo_nico.min()
+    elif current_state == 'finn':
+        servo_nico.max()
         servo_finn.max()
+    else:
+        servo_nico.max()
+        servo_finn.min()
     time.sleep(1)
     servo_finn.detach()
     servo_nico.detach()

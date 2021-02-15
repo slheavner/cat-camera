@@ -1,3 +1,4 @@
+from gpiozero import Servo
 from imutils.video import VideoStream
 from flask import Response
 from flask import request
@@ -22,7 +23,17 @@ app = Flask(__name__)
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 vs = VideoStream(src=0, resolution=(320, 240)).start()
+vs.stream.set(3, 1280)
+vs.stream.set(4, 720)
+vs.stream.get(17)
 time.sleep(2.0)
+SERVO_MIN = 0.000544
+SERVO_MAX = 0.0024
+servo_nico = Servo(18, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
+servo_finn = Servo(13, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
+
+
+current_state = 'none'
 
 
 nico_values = {
@@ -73,9 +84,27 @@ def is_cat(n, f):
         return 'none'
 
 
+def write_text(frame, text, y):
+    return cv2.putText(frame, text, (50, y),
+                       cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), thickness=3)
+
+
+def update_servos():
+    global current_state
+    if current_state == 'nico':
+        servo_nico.max()
+        servo_finn.min()
+    elif current_state == 'finn':
+        servo_nico.min()
+        servo_finn.max()
+    else:
+        servo_nico.min()
+        servo_finn.min()
+
+
 def generate():
     # grab global references to the output frame and lock variables
-    global output, lock
+    global output, lock, current_state
     # loop over frames from the output stream
     while True:
         # wait until the lock is acquired
@@ -87,14 +116,16 @@ def generate():
             frame, finn_values['lower'], finn_values['upper'])
         nico_count = cv2.countNonZero(nico_mask)
         finn_count = cv2.countNonZero(finn_mask)
-        output = cv2.putText(output, "Nico: " + str(nico_count), (50, 50),
-                             cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
-        output = cv2.putText(output, "Finn: " + str(finn_count), (50, 150),
-                             cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
-        output = cv2.putText(output, "Percentage: " + str(nico_count / finn_count),
-                             (50, 250), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
-        output = cv2.putText(output, "Is Cat: " + is_cat(nico_count, finn_count),
-                             (50, 350), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 255), thickness=10)
+        height = 25
+        cat = is_cat(nico_count, finn_count)
+        output = write_text(output, 'nico: ' + str(nico_count), height)
+        output = write_text(output, 'finn: ' + str(finn_count), height * 3)
+        output = write_text(output, 'ratio: ' +
+                            str(nico_count / finn_count), height * 5)
+        output = write_text(output, 'is cat: ' + cat, height * 7)
+        if cat != current_state:
+            current_state = cat
+            update_servos()
         with lock:
             # check if the output frame is available, otherwise skip
             # the iteration of the loop

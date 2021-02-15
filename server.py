@@ -29,8 +29,14 @@ vs.stream.get(17)
 time.sleep(2.0)
 SERVO_MIN = 0.000544
 SERVO_MAX = 0.0024
-servo_nico = Servo(18, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
-servo_finn = Servo(13, min_pulse_width=SERVO_MIN, max_pulse_width=SERVO_MAX)
+
+
+def get_servos():
+    servo_nico = Servo(18, min_pulse_width=SERVO_MIN,
+                       max_pulse_width=SERVO_MAX)
+    servo_finn = Servo(13, min_pulse_width=SERVO_MIN,
+                       max_pulse_width=SERVO_MAX)
+    return servo_nico, servo_finn
 
 
 current_state = 'none'
@@ -91,6 +97,7 @@ def write_text(frame, text, y):
 
 def update_servos():
     global current_state
+    servo_nico, servo_finn = get_servos()
     if current_state == 'nico':
         servo_nico.max()
         servo_finn.min()
@@ -100,6 +107,8 @@ def update_servos():
     else:
         servo_nico.min()
         servo_finn.min()
+    servo_nico.close()
+    servo_finn.close()
 
 
 def generate():

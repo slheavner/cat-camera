@@ -77,9 +77,9 @@ def set_range():
 
 def is_cat(n, f):
     percentage = n / f
-    if percentage >= 1.15 and n > 200000:
+    if percentage >= 1.15 and n > 85000:
         return 'nico'
-    elif percentage <= 0.85 and f > 200000:
+    elif percentage <= 0.85 and f > 50000:
         return 'finn'
     else:
         return 'none'

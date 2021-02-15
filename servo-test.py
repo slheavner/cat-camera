@@ -14,14 +14,15 @@ def get_servos():
     return servo_nico, servo_finn
 
 
+nico, finn = get_servos()
+
+
 while True:
-    nico, finn = get_servos()
     nico.min()
     finn.min()
     nico.detach()
     finn.detach()
     sleep(2)
-    nico, finn = get_servos()
     nico.max()
     finn.max()
     nico.detach()
